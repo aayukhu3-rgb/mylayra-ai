@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyLayra - Where should we start?</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>*{font-family:Inter,sans-serif}body{background:#0a0a0a}::-webkit-scrollbar{width:0}</style>
+</head>
+<body class="bg-[#0a0a0a] text-white flex h-screen" onclick="if(event.target.tagName!=='BUTTON'&&event.target.tagName!=='INPUT')document.getElementById('inp').focus()">
+<div class="w-[270px] hidden md:flex flex-col bg-[#0f0f0f] border-r border-[#1e1e1e] p-3">
+<div class="flex items-center gap-3 p-2 mb-4"><img src="https://i.ibb.co/0jq7v4k/mylayra.png" class="w-8 h-8 rounded-full"><b>MyLayra</b></div>
+<button onclick="newChat()" class="bg-[#1a1a1a] hover:bg-[#222] w-full py-2.5 rounded-full text-sm mb-3">+ New chat</button>
+<div id="history" class="flex-1 overflow-y-auto text-[13px] text-[#888] space-y-2"></div>
+<div class="text-[11px] text-[#444] pt-3 border-t border-[#1e1e1e]">MyLayra AI • by Himanshu<br>Full HD • HD Video • Voice</div>
+</div>
+<div class="flex-1 flex flex-col">
+<div class="flex justify-between items-center p-4"><div class="flex md:hidden items-center gap-2"><b>MyLayra</b></div><div></div><div class="flex gap-2"><button class="bg-[#2b7cff] px-5 py-2 rounded-full text-sm">Log in</button><button class="bg-[#1a1a1a] px-5 py-2 rounded-full text-sm">Sign up</button></div></div>
+<div class="flex-1 flex flex-col items-center justify-center px-4 pb-6">
+<h1 id="mainTitle" class="text-[32px] md:text-[46px] font-[300] tracking-[-1px] mb-10 text-center">Where should we start?</h1>
+<div id="chatBox" class="w-full max-w-[760px] hidden flex-col gap-5 overflow-y-auto max-h-[60vh] mb-5 px-1"></div>
+<div class="w-full max-w-[760px] bg-[#171717] border border-[#262626] rounded-[28px] p-2.5 shadow-2xl">
+<div class="flex items-center bg-[#1f1f1f] rounded-full px-2 py-2 gap-2">
+<button class="w-9 h-9 bg-[#2a2a2a] rounded-full text-xl">+</button>
+<input id="inp" placeholder="Ask MyLayra... /image /video" class="flex-1 bg-transparent outline-none px-3 text-[15px] placeholder:text-[#777]">
+<button onclick="voice()" class="w-9 h-9 bg-[#2a2a2a] rounded-full">🎤</button>
+<button onclick="send()" class="w-9 h-9 bg-white text-black rounded-full font-bold text-[18px]">↑</button>
+</div>
+<div class="flex gap-3 mt-3 px-4 text-[11px] text-[#666]"><span onclick="setT('Create a full HD image of futuristic city')" class="cursor-pointer hover:text-white">🖼️ Full HD Pic</span><span onclick="setT('Create HD video of logo glowing')" class="cursor-pointer hover:text-white">🎬 HD Video</span><span onclick="setT('Make me a portfolio website')" class="cursor-pointer hover:text-white">💻 Code</span></div>
+</div>
+<p class="text-[10px] text-[#444] mt-4">MyLayra can make mistakes. Branded by Himanshu</p>
+</div>
+</div>
+</div>
+<script>
+const chatBox=document.getElementById('chatBox'); const inp=document.getElementById('inp'); const title=document.getElementById('mainTitle');
+function setT(t){inp.value=t; inp.focus();}
+function newChat(){chatBox.innerHTML=''; chatBox.classList.add('hidden'); title.classList.remove('hidden'); title.innerText='Where should we start?';}
+function voice(){const r=new(window.SpeechRecognition||window.webkitSpeechRecognition)(); r.lang='en-IN'; r.start(); r.onresult=e=>{inp.value=e.results[0][0].transcript; send();}}
+async function send(){
+ let txt=inp.value.trim(); if(!txt)return;
+ let mode='text'; if(txt.startsWith('/image')){mode='image'; txt=txt.replace('/image','').trim()} if(txt.startsWith('/video')){mode='video'; txt=txt.replace('/video','').trim()}
+ chatBox.classList.remove('hidden'); title.classList.add('hidden');
+ chatBox.innerHTML+=`<div class="flex justify-end"><div class="bg-[#e8e8e8] text-black px-4 py-2.5 rounded-[20px] rounded-br-[6px] text-[14px] max-w-[80%]">${txt}</div></div>`;
+ document.getElementById('history').innerHTML+=`<div class="p-2 bg-[#1a1a1a] rounded truncate">• ${txt}</div>`;
+ inp.value=''; const tmp=document.createElement('div'); tmp.id='tmp'; tmp.className='text-[#666] text-sm px-2'; tmp.innerText='MyLayra is thinking...'; chatBox.appendChild(tmp); chatBox.scrollTop=chatBox.scrollHeight;
+ const res=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:txt,mode})});
+ const data=await res.json(); document.getElementById('tmp').remove();
+ let html=data.reply.replace(/!\[.*?\]\(.*?\)/g, m=>{const url=m.match(/\(.*\)/)[0].slice(1,-1); return `<img src="${url}" class="rounded-xl w-full mt-2 border border-[#222]" />`});
+ chatBox.innerHTML+=`<div class="px-2 text-[14.5px] leading-[1.7] text-[#ddd]">${html}</div>`;
+ chatBox.scrollTop=chatBox.scrollHeight;
+}
+inp.addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+</script>
+</body></html>
